@@ -74,7 +74,3 @@ def api_show_shoes(request, pk):
             response = JsonResponse({"message":"Does not exists"})
             response.status_code = 404
             return response
-
-        
-
-
