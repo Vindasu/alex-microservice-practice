@@ -25,7 +25,6 @@ function ShoesList() {
                 return shoe.id !== id;
             }
         ))
-        // find hat by id and remove from shoes array
     }
 
 
@@ -49,7 +48,7 @@ function ShoesList() {
                     <td>{ shoe.model_name }</td>
                     <td>{ shoe.color }</td>
                     <td>
-                    <img src={shoe.picture_url} className="" alt= "..." width="100" height="100"></img>
+                    <img src={shoe.picture_url} className="" alt= "..."  width="100" height="100"></img>
                     </td>
                     <td>{ shoe.bin }</td>
                     <td><button variant="outline-danger" onClick={() => handleDelete(shoe.id)}>Delete</button></td>

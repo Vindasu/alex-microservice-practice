@@ -1,10 +1,15 @@
 from django.shortcuts import render
-import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from .acls import get_photo
+import json
+
 from common.json import ModelEncoder
 from .models import Shoe, BinVO
-# Create your views here.
+
+# class ShoeListEncoder(ModelEncoder):
+#     model = Shoe
+#     properties = ["model_name"]
 
 class ShoeListEncoder(ModelEncoder):
     model = Shoe
@@ -15,8 +20,21 @@ class ShoeListEncoder(ModelEncoder):
         "color",
         "picture_url",
     ]
+
     def get_extra_data(self, o):
         return {"bin": o.bin.closet_name}
+
+# class BinVOEncoder(ModelEncoder):
+#     model = BinVO
+#     properties = ["import_href"]
+    
+#     def get_extra_data(self, o):
+#         return {"bin": o.closet_name}
+
+# class ShoeDetailEncoder(ModelEncoder):
+#     model = Shoe
+#     properties = ["manufacturer", "model_name", "color", "picture_url"]
+#     encoders={"bin": BinVOEncoder}
 
 class ShoeDetailEncoder(ModelEncoder):
     model = Shoe
@@ -43,7 +61,6 @@ def api_list_shoes(request, bin_vo_id=None):
         )
     else:
         content = json.loads(request.body)
-        print(content)
 
         try:
             bin = BinVO.objects.get(import_href=content["bin"])
@@ -53,12 +70,15 @@ def api_list_shoes(request, bin_vo_id=None):
                 {"message": "Invalid bin id"},
                 status=400,
             )
+        photo = get_photo(content["model_name"], content["manufacturer"])
+        content.update(photo)
         shoe = Shoe.objects.create(**content)
         return JsonResponse(
             shoe,
             encoder=ShoeListEncoder,
             safe=False,
         )
+
 
 @require_http_methods(["DELETE", "GET", "PUT"])
 def api_show_shoes(request, pk):
@@ -71,6 +91,20 @@ def api_show_shoes(request, pk):
                 safe=False,
             )
         except Shoe.DoesNotExist:
-            response = JsonResponse({"message":"Does not exists"})
+            response = JsonResponse({"message": "Does not exists"})
             response.status_code = 404
             return response
+    elif request.method == "DELETE":
+        try:
+            shoe = Shoe.objects.get(id=pk)
+            shoe.delete()
+            return JsonResponse(
+                shoe,
+                encoder=ShoeDetailEncoder,
+                safe=False,
+            )
+        except Shoe.DoesNotExist:
+            return JsonResponse(
+                {"message":"Shoe does not exist"},
+                status=400,
+                )
