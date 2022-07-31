@@ -53,8 +53,6 @@ def api_list_shoes(request, bin_vo_id=None):
                 {"message": "Invalid bin id"},
                 status=400,
             )
-        # photo = get_photo(content["model_name"], content["manufacturer"])
-        # content.update(photo)
         shoe = Shoe.objects.create(**content)
         return JsonResponse(
             shoe,
